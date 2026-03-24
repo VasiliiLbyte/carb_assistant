@@ -1,3 +1,4 @@
+from app.core.security import hash_password
 from app.models import User
 from app.services.repository import create_entity, delete_entity, get_entity, list_entities, update_entity
 
@@ -11,12 +12,21 @@ async def get_item(session, item_id: str):
 
 
 async def create_item(session, payload: dict):
-    return await create_entity(session, User, payload)
+    data = {**payload}
+    password = data.pop('password', None)
+    if not password:
+        raise ValueError('password is required')
+    data['password_hash'] = hash_password(password)
+    return await create_entity(session, User, data)
 
 
 async def update_item(session, item_id: str, payload: dict):
     obj = await get_item(session, item_id)
-    return await update_entity(session, obj, payload)
+    data = {**payload}
+    password = data.pop('password', None)
+    if password is not None:
+        data['password_hash'] = hash_password(password)
+    return await update_entity(session, obj, data)
 
 
 async def delete_item(session, item_id: str):

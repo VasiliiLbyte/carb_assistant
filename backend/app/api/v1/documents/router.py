@@ -3,10 +3,65 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
 from app.core.deps import require_roles
-from app.schemas.documents import DocumentCreate, DocumentOut, DocumentUpdate
+from app.models import Project
+from app.schemas.documents import (
+    DocumentCreate,
+    DocumentOut,
+    DocumentUpdate,
+    PresignDownloadResponse,
+    PresignUploadRequest,
+    PresignUploadResponse,
+    RegisterVersionRequest,
+)
 from app.services import documents_service
+from app.services.repository import get_entity
 
 router = APIRouter(prefix='/documents', tags=['documents'])
+
+
+@router.post('/presign-upload', response_model=PresignUploadResponse)
+async def presign_upload(
+    payload: PresignUploadRequest,
+    session: AsyncSession = Depends(get_async_session),
+    _user: dict = Depends(require_roles('admin', 'pm', 'engineer')),
+):
+    if payload.project_id:
+        await get_entity(session, Project, payload.project_id)
+    data = await documents_service.presign_new_upload(payload.project_id, payload.content_type)
+    return PresignUploadResponse(**data)
+
+
+@router.post('/{item_id}/presign-upload', response_model=PresignUploadResponse)
+async def presign_version_upload(
+    item_id: str,
+    payload: PresignUploadRequest,
+    session: AsyncSession = Depends(get_async_session),
+    _user: dict = Depends(require_roles('admin', 'pm', 'engineer')),
+):
+    data = await documents_service.presign_version_upload(session, item_id, payload.content_type)
+    return PresignUploadResponse(**data)
+
+
+@router.post('/{item_id}/register-version', response_model=DocumentOut)
+async def register_version(
+    item_id: str,
+    payload: RegisterVersionRequest,
+    session: AsyncSession = Depends(get_async_session),
+    _user: dict = Depends(require_roles('admin', 'pm', 'engineer')),
+):
+    doc = await documents_service.register_new_version(session, item_id, payload.object_key, payload.metadata_json)
+    return doc
+
+
+@router.get('/{item_id}/presign-download', response_model=PresignDownloadResponse)
+async def presign_download(
+    item_id: str,
+    version: int | None = Query(None, ge=1),
+    session: AsyncSession = Depends(get_async_session),
+    _user: dict = Depends(require_roles('admin', 'pm', 'engineer', 'viewer')),
+):
+    data = await documents_service.presign_download(session, item_id, version)
+    return PresignDownloadResponse(**data)
 
 
 @router.get('/', response_model=list[DocumentOut])

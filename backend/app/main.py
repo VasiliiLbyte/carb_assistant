@@ -1,10 +1,26 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette import status
 
 from app.api.v1.router import api_router
+from app.integrations.storage.minio_client import ensure_bucket_exists
 
-app = FastAPI(title='Universal CRM API', version='0.2.0')
+_log = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    try:
+        ensure_bucket_exists()
+    except Exception:
+        _log.warning('MinIO bucket check/create failed; presigned uploads may be unavailable', exc_info=True)
+    yield
+
+
+app = FastAPI(title='Universal CRM API', version='0.2.0', lifespan=lifespan)
 app.include_router(api_router, prefix='/api/v1')
 
 

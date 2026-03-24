@@ -1,9 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError, jwt
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.security import create_access_token, create_refresh_token
+from app.core.db import get_async_session
+from app.core.security import create_access_token, create_refresh_token, verify_password
+from app.models import User
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -11,7 +15,6 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 class LoginRequest(BaseModel):
     username: str
     password: str
-    role: str = 'admin'
 
 
 class RefreshRequest(BaseModel):
@@ -19,13 +22,19 @@ class RefreshRequest(BaseModel):
 
 
 @router.post('/login')
-async def login(payload: LoginRequest) -> dict:
+async def login(payload: LoginRequest, session: AsyncSession = Depends(get_async_session)) -> dict:
     if not payload.username or not payload.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid credentials')
 
+    result = await session.execute(select(User).where(User.email == payload.username))
+    user = result.scalar_one_or_none()
+    if user is None or not user.password_hash or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid credentials')
+
+    sub = str(user.id)
     return {
-        'access_token': create_access_token(payload.username, payload.role),
-        'refresh_token': create_refresh_token(payload.username, payload.role),
+        'access_token': create_access_token(sub, user.role),
+        'refresh_token': create_refresh_token(sub, user.role),
         'token_type': 'bearer',
     }
 

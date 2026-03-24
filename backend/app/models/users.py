@@ -9,6 +9,7 @@ class User(Base, UUIDMixin, TimestampMixin):
     __tablename__ = 'users'
 
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(50), default='viewer', index=True)
     skills: Mapped[dict] = mapped_column(JSON, default=dict)

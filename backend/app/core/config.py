@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     minio_access_key: str = 'minio'
     minio_secret_key: str = 'minio123'
     minio_bucket: str = 'crm-documents'
+    minio_presign_expires_seconds: int = 3600
 
     openclaw_base_url: str = 'https://api.openclaw.example'
     openclaw_api_key: str = 'change-me'

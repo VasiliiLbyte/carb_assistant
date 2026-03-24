@@ -4,6 +4,7 @@ from app.schemas.common import ORMModel
 
 class UserCreate(BaseModel):
     email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(min_length=1, max_length=255)
     role: str = 'viewer'
     skills: dict = Field(default_factory=dict)
@@ -12,6 +13,7 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    password: str | None = Field(default=None, min_length=8, max_length=128)
     full_name: str | None = Field(default=None, min_length=1, max_length=255)
     role: str | None = None
     skills: dict | None = None
