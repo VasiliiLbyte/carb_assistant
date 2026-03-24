@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: universal_crm
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: crm
+    # Host port 5433 avoids clash with another local Postgres on 5432.
+    ports: ['5433:5432']
+  redis:
+    image: redis:7
+    ports: ['6379:6379']
+  minio:
+    image: minio/minio
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports: ['9000:9000', '9001:9001']
+  backend:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes: ['./backend:/app']
+    # Host 8010 if another app already uses localhost:8000.
+    ports: ['8010:8000']
+    depends_on: [postgres, redis, minio]
+  worker:
+    build: ./backend
+    command: celery -A app.tasks.celery_app.celery_app worker -l info
+    volumes: ['./backend:/app']
+    depends_on: [backend, redis]
+  frontend:
+    build: ./frontend
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    volumes: ['./frontend:/app']
+    ports: ['5173:5173']
+    depends_on: [backend]
