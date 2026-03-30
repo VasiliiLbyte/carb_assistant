@@ -26,6 +26,10 @@ class Settings(BaseSettings):
 
     openclaw_base_url: str = 'https://api.openclaw.example'
     openclaw_api_key: str = 'change-me'
+    grok_api_key: str = ''
+    grok_api_base: str = 'https://api.x.ai/v1'
+    grok_model: str = 'grok-3-mini'
+    grok_timeout_seconds: float = 30.0
 
 
 settings = Settings()

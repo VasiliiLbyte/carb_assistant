@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.task_auto_creator import TaskAutoCreator
 from app.crud import tasks as tasks_crud
-from app.dependencies import get_db, get_llm_client, require_roles
+from app.dependencies import LLMClient, get_db, get_llm_client, require_roles
 from app.schemas.ai import AICreateTasksFromMessageRequest, AICreateTasksFromMessageResponse
 from app.schemas.tasks import TaskOut
 
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 async def create_tasks_from_message(
     payload: AICreateTasksFromMessageRequest,
     session: AsyncSession = Depends(get_db),
-    llm_client=Depends(get_llm_client),
+    llm_client: LLMClient = Depends(get_llm_client),
     _user: dict = Depends(require_roles("admin", "pm", "engineer")),
 ) -> AICreateTasksFromMessageResponse:
     """Generate task drafts from a message and persist them."""

@@ -34,3 +34,14 @@ class AICreateTasksFromMessageRequest(BaseModel):
 
 class AICreateTasksFromMessageResponse(BaseModel):
     tasks: list[TaskOut]
+
+
+class OpenClawWebhookRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=8000)
+    source: str = Field(default="telegram", min_length=1, max_length=64)
+    project_id: int | str | None = None
+
+
+class OpenClawWebhookResponse(BaseModel):
+    accepted: bool
+    tasks: list[TaskOut]

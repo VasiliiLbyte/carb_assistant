@@ -12,6 +12,7 @@ from starlette import status
 
 from app.routers.router import api_router
 from app.routers.ai import router as ai_router
+from app.routers.openclaw import router as openclaw_router
 from app.routers.projects import router as projects_router
 from app.routers.tasks import router as tasks_router
 from app.integrations.storage.minio_client import ensure_bucket_exists
@@ -42,6 +43,7 @@ app.include_router(api_router)
 app.include_router(projects_router, prefix="/api/v1")
 app.include_router(tasks_router, prefix="/api/v1")
 app.include_router(ai_router, prefix="/api/v1")
+app.include_router(openclaw_router, prefix="/api/v1")
 
 
 @app.exception_handler(ValueError)

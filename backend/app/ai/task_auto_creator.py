@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.llm_client import GrokLLMClient
 from app.dependencies import LLMClient
 from app.schemas.tasks import TaskCreate
 
@@ -56,6 +58,38 @@ class TaskAutoCreator:
             return None
         return match.group(1).strip()
 
+    @staticmethod
+    def _parse_due_at(value: Any) -> datetime | None:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            return None
+        candidate = value.strip()
+        if not candidate:
+            return None
+        try:
+            return datetime.fromisoformat(candidate.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _task_from_llm_row(row: dict[str, Any], project_id: int | str | None) -> TaskCreate | None:
+        title = str(row.get("title", "")).strip()
+        if not title:
+            return None
+        description = str(row.get("description", "")).strip()
+        assignee = row.get("assignee")
+        if isinstance(assignee, str) and assignee.strip():
+            description = f"{description}\nassignee_hint={assignee.strip()}".strip()
+        return TaskCreate(
+            title=title[:255],
+            description=description[:4000],
+            due_at=TaskAutoCreator._parse_due_at(row.get("due_at")),
+            project_id=str(project_id) if project_id is not None else None,
+        )
+
     async def create_tasks_from_message(
         self,
         text: str,
@@ -63,11 +97,24 @@ class TaskAutoCreator:
     ) -> list[TaskCreate]:
         """Extract a list of task drafts from an input message.
 
-        Uses an injected LLM client (stub for now) and deterministic fallback parsing.
+        Uses an injected LLM client and deterministic fallback parsing.
         """
 
         prompt = self._build_prompt(text=text, project_id=project_id)
-        _ = await self._llm_client.complete(prompt)
+        llm_rows: list[dict[str, Any]] = []
+        try:
+            llm_raw = await self._llm_client.generate(prompt)
+            llm_rows = GrokLLMClient.parse_tasks_json(llm_raw)
+        except Exception:
+            llm_rows = []
+
+        llm_tasks: list[TaskCreate] = []
+        for row in llm_rows:
+            task = self._task_from_llm_row(row, project_id=project_id)
+            if task is not None:
+                llm_tasks.append(task)
+        if llm_tasks:
+            return llm_tasks
 
         tasks: list[TaskCreate] = []
         for item in self._split_candidates(text):

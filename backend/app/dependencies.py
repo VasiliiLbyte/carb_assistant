@@ -11,6 +11,8 @@ from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.llm_client import GrokLLMClient
+from app.core.config import settings
 from app.core.database import get_async_session
 from app.core.deps import get_current_user, require_roles
 
@@ -32,20 +34,17 @@ async def get_db() -> AsyncIterator[AsyncSession]:
 class LLMClient(Protocol):
     """Protocol for pluggable LLM clients."""
 
-    async def complete(self, prompt: str) -> str:
+    async def generate(self, prompt: str) -> str:
         """Return model completion text for the given prompt."""
-
-
-class StubLLMClient:
-    """Development stub client used until real LLM integration is enabled."""
-
-    async def complete(self, prompt: str) -> str:
-        # Stub echoes prompt context so callers can run deterministic fallbacks.
-        return prompt
 
 
 def get_llm_client() -> LLMClient:
     """Provide LLM client via dependency injection."""
 
-    return StubLLMClient()
+    return GrokLLMClient(
+        api_key=settings.grok_api_key,
+        api_base=settings.grok_api_base,
+        model=settings.grok_model,
+        timeout_seconds=settings.grok_timeout_seconds,
+    )
 
