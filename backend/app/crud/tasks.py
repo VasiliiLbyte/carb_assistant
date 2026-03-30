@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Task
+from app.models import Task, User
 
 
 async def list_tasks(
@@ -53,6 +53,26 @@ async def update_task(session: AsyncSession, task: Task, payload: dict) -> Task:
     for key, value in payload.items():
         if value is not None:
             setattr(task, key, value)
+    await session.commit()
+    await session.refresh(task)
+    return task
+
+
+async def update_assignee(session: AsyncSession, task: Task, assignee_id: str | None) -> Task:
+    """Assign task to a valid user or unassign it."""
+
+    if assignee_id is None:
+        task.assignee_id = None
+    else:
+        assignee = await session.get(User, assignee_id)
+        if assignee is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assignee not found")
+        if assignee.role not in {"admin", "pm", "engineer"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Assignee role is not allowed for task assignment",
+            )
+        task.assignee_id = assignee.id
     await session.commit()
     await session.refresh(task)
     return task

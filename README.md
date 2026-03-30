@@ -52,6 +52,18 @@ Monorepo with FastAPI backend and React frontend.
 - **LLM-генерация сообщений**: для пингов и fallback-интерпретации ответов используется `OpenRouterLLMClient`.
 - **Smoke-тест Stage 6**: добавлен `backend/scripts/smoke_proactive.py`.
 
+## Что сделано на Этапе 7
+- **Competency & Load Manager + AI Recommender**: добавлен пакет `backend/app/recommender/` с `AIRecommender` и pydantic-схемами.
+- **Скоринг исполнителей (top-3)**: учитываются `User.competency`, `User.load`, совпадение навыков (`User.skills`), приоритет задачи и история выполненных похожих задач.
+- **LLM-объяснение рекомендации**: используется `OpenRouterLLMClient` через DI для генерации краткого обоснования на русском.
+- **Новые API endpoint'ы**: добавлен роутер `backend/app/routers/recommender.py`:
+  - `POST /api/v1/recommender/recommend`
+  - `POST /api/v1/recommender/apply`
+- **Расширение CRUD**:
+  - `backend/app/crud/tasks.py::update_assignee(...)` с валидацией роли исполнителя
+  - `backend/app/crud/users.py` для обновления `competency` и `load`
+- **Smoke-тест Stage 7**: добавлен `backend/scripts/smoke_recommender.py`.
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`
@@ -144,6 +156,44 @@ Monorepo with FastAPI backend and React frontend.
      "action_type": "escalate_manager",
      "config": {"days_threshold": 3, "manager_user_id": "<uuid>"},
      "enabled": true
+   }
+   ```
+
+## Stage 7 Recommender examples and smoke
+1. Убедитесь, что backend поднят: `docker compose up --build -d backend`.
+2. Установите `SMOKE_BEARER_TOKEN` (JWT с ролью `admin` или `pm`).
+3. Запустите smoke:
+   - из хоста: `python backend/scripts/smoke_recommender.py`
+   - из контейнера: `docker compose exec -e SMOKE_API_BASE_URL=http://127.0.0.1:8000/api/v1 backend python -m scripts.smoke_recommender`
+4. Пример рекомендации по существующей задаче:
+   - `POST /api/v1/recommender/recommend`
+   - body:
+   ```json
+   {
+     "task_id": "<uuid>"
+   }
+   ```
+5. Пример рекомендации по ad-hoc задаче:
+   - `POST /api/v1/recommender/recommend`
+   - body:
+   ```json
+   {
+     "task": {
+       "title": "Подготовить план релиза",
+       "description": "Согласовать scope и таймлайн",
+       "priority": "high",
+       "tags": ["release", "planning"],
+       "estimated_hours": 6
+     }
+   }
+   ```
+6. Применение рекомендации:
+   - `POST /api/v1/recommender/apply`
+   - body:
+   ```json
+   {
+     "task_id": "<uuid задачи>",
+     "assignee_id": "<uuid исполнителя>"
    }
    ```
 
