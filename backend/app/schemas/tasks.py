@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 from app.schemas.common import ORMModel
@@ -33,8 +34,8 @@ class TaskCreate(BaseModel):
     due_at: datetime | None = None
     dependency_ids: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
-    project_id: str | None = None
-    assignee_id: str | None = None
+    project_id: UUID | None = None
+    assignee_id: UUID | None = None
 
 
 class TaskUpdate(BaseModel):
@@ -46,12 +47,12 @@ class TaskUpdate(BaseModel):
     due_at: datetime | None = None
     dependency_ids: list[str] | None = None
     tags: list[str] | None = None
-    project_id: str | None = None
-    assignee_id: str | None = None
+    project_id: UUID | None = None
+    assignee_id: UUID | None = None
 
 
 class TaskOut(ORMModel):
-    id: str
+    id: UUID
     title: str
     description: str
     status: TaskStatus
@@ -60,5 +61,5 @@ class TaskOut(ORMModel):
     due_at: datetime | None
     dependency_ids: list[str]
     tags: list[str]
-    project_id: str | None
-    assignee_id: str | None
+    project_id: UUID | None
+    assignee_id: UUID | None

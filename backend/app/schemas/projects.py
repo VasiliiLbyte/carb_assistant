@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 from app.schemas.common import ORMModel
 
@@ -17,7 +19,7 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectOut(ORMModel):
-    id: str
+    id: UUID
     name: str
     project_type: str
     stage: str
