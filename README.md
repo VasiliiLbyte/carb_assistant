@@ -2,10 +2,24 @@
 
 Monorepo with FastAPI backend and React frontend.
 
+## Что сделано на Этапе 1
+- **Docker Compose**: сервисы `postgres`, `redis`, `minio`, `backend` (FastAPI), `worker` (Celery), `frontend` (Vite/React)
+- **Backend foundation (FastAPI + async SQLAlchemy)**:
+  - `/health` health-check
+  - подключение API роутеров
+  - базовые модели/схемы домена: `User`, `Project`, `Task`, `Document`
+  - Alembic миграции (включая `User.competency` и `User.load`)
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`
 3. Open API docs at `http://localhost:8010/docs` (backend mapped to host port **8010** in `docker-compose.yml` to avoid clashing with other stacks on `8000`)
+
+## Запуск (локально, через Docker)
+1. Скопируйте переменные окружения: `cp .env.example .env` (на Windows можно просто создать `.env` рядом с `.env.example`).
+2. Запустите инфраструктуру и сервисы: `docker-compose up --build`
+3. Проверьте health-check: `GET http://localhost:8010/health`
+4. Swagger/OpenAPI: `http://localhost:8010/docs`
 
 ## Stage 1 DB workflow
 1. Start Postgres: `docker-compose up -d postgres`

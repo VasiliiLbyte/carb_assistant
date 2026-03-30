@@ -1,3 +1,7 @@
+"""SQLAlchemy model: Task."""
+
+from __future__ import annotations
+
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String
@@ -16,8 +20,8 @@ class Task(Base, UUIDMixin, TimestampMixin):
     priority: Mapped[str] = mapped_column(String(50), default='medium', index=True)
     estimated_hours: Mapped[int] = mapped_column(Integer, default=0)
     due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
-    dependency_ids: Mapped[list] = mapped_column(JSON, default=list)
-    tags: Mapped[list] = mapped_column(JSON, default=list)
+    dependency_ids: Mapped[list[str]] = mapped_column(JSON, default=list)
+    tags: Mapped[list[str]] = mapped_column(JSON, default=list)
 
     project_id: Mapped[str | None] = mapped_column(ForeignKey('projects.id', ondelete='SET NULL'), nullable=True, index=True)
     assignee_id: Mapped[str | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)

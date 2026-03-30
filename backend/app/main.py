@@ -1,11 +1,16 @@
+"""FastAPI application entrypoint."""
+
+from __future__ import annotations
+
 import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette import status
 
-from app.api.v1.router import api_router
+from app.routers.router import api_router
 from app.integrations.storage.minio_client import ensure_bucket_exists
 
 _log = logging.getLogger(__name__)
@@ -21,7 +26,16 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title='Universal CRM API', version='0.2.0', lifespan=lifespan)
-app.include_router(api_router, prefix='/api/v1')
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_router)
 
 
 @app.exception_handler(ValueError)
