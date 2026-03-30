@@ -40,8 +40,11 @@ class OpenClawWebhookRequest(BaseModel):
     message: str = Field(min_length=1, max_length=8000)
     source: str = Field(default="telegram", min_length=1, max_length=64)
     project_id: int | str | None = None
+    message_type: str = Field(default="task_create", min_length=1, max_length=64)
+    user_id: str | None = None
 
 
 class OpenClawWebhookResponse(BaseModel):
     accepted: bool
     tasks: list[TaskOut]
+    proactive_result: dict | None = None

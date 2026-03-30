@@ -9,6 +9,7 @@ from app.ai.task_auto_creator import TaskAutoCreator
 from app.core.config import settings
 from app.crud import tasks as tasks_crud
 from app.dependencies import LLMClient, get_db, get_llm_client
+from app.proactive.proactive_engine import ProactiveEngine
 from app.schemas.ai import OpenClawWebhookRequest, OpenClawWebhookResponse
 from app.schemas.tasks import TaskOut
 
@@ -32,6 +33,15 @@ async def openclaw_webhook(
         )
     if x_openclaw_api_key != expected_api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid webhook signature")
+
+    if payload.message_type == "proactive_response":
+        engine = ProactiveEngine(db=session, llm_client=llm_client)
+        result = await engine.handle_response(
+            message_text=payload.message,
+            source=payload.source,
+            user_id=payload.user_id,
+        )
+        return OpenClawWebhookResponse(accepted=True, tasks=[], proactive_result=result.model_dump())
 
     creator = TaskAutoCreator(db=session, llm_client=llm_client)
     generated_tasks = await creator.create_tasks_from_message(

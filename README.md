@@ -43,6 +43,15 @@ Monorepo with FastAPI backend and React frontend.
 - **Интеграция с CRUD задач**: извлечённые задачи сохраняются через `backend/app/crud/tasks.py`.
 - **Smoke-тест Stage 5**: добавлен `backend/scripts/smoke_document.py`.
 
+## Что сделано на Этапе 6
+- **Proactive Module**: добавлен пакет `backend/app/proactive/` с `ProactiveEngine`, `RuleEngine` и pydantic-схемами.
+- **CRUD правил + триггер пинга**: добавлен роутер `backend/app/routers/proactive.py`:
+  - `GET/POST/PUT/DELETE /api/v1/proactive/rules`
+  - `POST /api/v1/proactive/trigger`
+- **Интеграция с OpenClaw webhook**: `POST /api/v1/openclaw/webhook` теперь поддерживает `message_type=proactive_response` и вызывает обработчик ответов.
+- **LLM-генерация сообщений**: для пингов и fallback-интерпретации ответов используется `OpenRouterLLMClient`.
+- **Smoke-тест Stage 6**: добавлен `backend/scripts/smoke_proactive.py`.
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`
@@ -110,6 +119,33 @@ Monorepo with FastAPI backend and React frontend.
 4. Ручная проверка:
    - `POST /api/v1/documents/upload` (multipart, поле `file`)
    - `POST /api/v1/documents/process` с body `{"file_key":"<from upload>", "project_id": null}`
+
+## Stage 6 Proactive module smoke
+1. Убедитесь, что backend поднят: `docker compose up --build -d backend`.
+2. Нужны переменные: `SMOKE_BEARER_TOKEN`, `OPENCLAW_API_KEY`.
+3. Запустите smoke:
+   - из хоста: `python backend/scripts/smoke_proactive.py`
+   - из контейнера: `docker compose exec -e SMOKE_API_BASE_URL=http://127.0.0.1:8000/api/v1 backend python -m scripts.smoke_proactive`
+4. Пример правила (body для `POST /api/v1/proactive/rules`):
+   ```json
+   {
+     "name": "daily-status-reminder",
+     "trigger_type": "daily_status_check",
+     "action_type": "send_message",
+     "config": {"hour_utc": 9},
+     "enabled": true
+   }
+   ```
+5. Пример эскалационного правила:
+   ```json
+   {
+     "name": "escalate-blocked-task",
+     "trigger_type": "inprogress_overdue_ping",
+     "action_type": "escalate_manager",
+     "config": {"days_threshold": 3, "manager_user_id": "<uuid>"},
+     "enabled": true
+   }
+   ```
 
 ## Docker troubleshooting
 - Compose validates (`docker compose config -q`). If Postgres stays `Created`, check `docker logs crab_assistant-postgres-1` — often **port 5432 already in use** on the host. This project maps Postgres to **host `5433`** (`5433:5432`); from your machine use `DB_HOST=localhost DB_PORT=5433` for tools like `smoke_schema.py` and GUI clients. Services inside Compose still use hostname `postgres` and port `5432`.
