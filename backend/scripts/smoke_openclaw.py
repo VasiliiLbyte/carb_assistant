@@ -37,6 +37,8 @@ def _request(method: str, path: str, payload: dict | None = None) -> tuple[int, 
 
 
 def main() -> None:
+    llm_mode = "real OpenRouter LLM" if os.getenv("OPENROUTER_API_KEY") else "fallback parser"
+    print(f"Running OpenClaw smoke in mode: {llm_mode}")
     payload = {
         "source": "telegram",
         "message": "- Сверстать лендинг до 20.04.2026; - Проверить аналитику, исполнитель: pavel",

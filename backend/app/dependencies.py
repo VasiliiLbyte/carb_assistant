@@ -11,7 +11,7 @@ from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.llm_client import GrokLLMClient
+from app.ai.llm_client import OpenRouterLLMClient
 from app.core.config import settings
 from app.core.database import get_async_session
 from app.core.deps import get_current_user, require_roles
@@ -41,10 +41,10 @@ class LLMClient(Protocol):
 def get_llm_client() -> LLMClient:
     """Provide LLM client via dependency injection."""
 
-    return GrokLLMClient(
-        api_key=settings.grok_api_key,
-        api_base=settings.grok_api_base,
-        model=settings.grok_model,
-        timeout_seconds=settings.grok_timeout_seconds,
+    return OpenRouterLLMClient(
+        api_key=settings.openrouter_api_key,
+        api_base=settings.openrouter_api_base,
+        model=settings.openrouter_model,
+        timeout_seconds=settings.openrouter_timeout_seconds,
     )
 

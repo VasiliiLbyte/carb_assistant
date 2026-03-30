@@ -28,8 +28,8 @@ Monorepo with FastAPI backend and React frontend.
 - **Smoke-тест AI endpoint**: добавлен `backend/scripts/smoke_ai.py`.
 
 ## Что сделано на Этапе 4
-- **Реальный LLM-клиент**: добавлен `backend/app/ai/llm_client.py` с `GrokLLMClient` (OpenAI-compatible через `httpx`).
-- **DI на реальный LLM**: `backend/app/dependencies.py::get_llm_client()` теперь возвращает `GrokLLMClient` с настройкой из env.
+- **Реальный LLM-клиент**: добавлен `backend/app/ai/llm_client.py` с `OpenRouterLLMClient` (OpenAI-compatible через `httpx`).
+- **DI на реальный LLM**: `backend/app/dependencies.py::get_llm_client()` теперь возвращает `OpenRouterLLMClient` с настройкой из env.
 - **OpenClaw webhook**: добавлен `backend/app/routers/openclaw.py` и endpoint `POST /api/v1/openclaw/webhook`.
 - **Интеграция webhook -> задачи**: входящее сообщение парсится через `TaskAutoCreator` и сохраняется через CRUD.
 - **Smoke-тесты Stage 4**: обновлен `backend/scripts/smoke_ai.py` и добавлен `backend/scripts/smoke_openclaw.py`.
@@ -72,12 +72,13 @@ Monorepo with FastAPI backend and React frontend.
 
 ## Stage 4 LLM/OpenClaw setup and smoke
 1. В `.env` добавьте:
-   - `GROK_API_KEY=<your_key>`
-   - `GROK_API_BASE=https://api.x.ai/v1` (по умолчанию)
-   - `GROK_MODEL=grok-3-mini`
+   - `OPENROUTER_API_KEY=sk-or-...`
+   - `OPENROUTER_API_BASE=https://openrouter.ai/api/v1` (по умолчанию)
+   - `OPENROUTER_MODEL=anthropic/claude-3.5-sonnet`
+   - `OPENROUTER_TIMEOUT_SECONDS=30`
    - `OPENCLAW_API_KEY=<your_webhook_key>`
 2. Перезапустите backend: `docker compose up --build -d backend`.
-3. Smoke AI (реальный LLM, если `GROK_API_KEY` есть; иначе fallback): `python backend/scripts/smoke_ai.py`.
+3. Smoke AI (реальный LLM, если `OPENROUTER_API_KEY` есть; иначе fallback): `python backend/scripts/smoke_ai.py`.
 4. Smoke webhook: `python backend/scripts/smoke_openclaw.py`.
 5. Ручной тест webhook:
    - `POST http://localhost:8010/api/v1/openclaw/webhook`

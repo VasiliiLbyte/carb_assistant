@@ -37,7 +37,7 @@ def _request(method: str, path: str, payload: dict | None = None) -> tuple[int, 
 
 
 def main() -> None:
-    llm_mode = "real LLM" if os.getenv("GROK_API_KEY") else "fallback parser"
+    llm_mode = "real OpenRouter LLM" if os.getenv("OPENROUTER_API_KEY") else "fallback parser"
     print(f"Running AI smoke in mode: {llm_mode}")
     payload = {
         "message": "- Подготовить отчёт до 15.04.2026; - Согласовать бюджет, ответственный: ivan",

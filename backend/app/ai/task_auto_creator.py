@@ -8,7 +8,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.llm_client import GrokLLMClient
+from app.ai.llm_client import OpenRouterLLMClient
 from app.dependencies import LLMClient
 from app.schemas.tasks import TaskCreate
 
@@ -104,7 +104,7 @@ class TaskAutoCreator:
         llm_rows: list[dict[str, Any]] = []
         try:
             llm_raw = await self._llm_client.generate(prompt)
-            llm_rows = GrokLLMClient.parse_tasks_json(llm_raw)
+            llm_rows = OpenRouterLLMClient.parse_tasks_json(llm_raw)
         except Exception:
             llm_rows = []
 

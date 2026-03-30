@@ -1,4 +1,4 @@
-"""OpenAI-compatible LLM client wrappers."""
+"""OpenRouter OpenAI-compatible LLM client wrappers."""
 
 from __future__ import annotations
 
@@ -8,15 +8,15 @@ from typing import Any
 import httpx
 
 
-class GrokLLMClient:
-    """Async client for Grok/OpenAI-compatible chat completion APIs."""
+class OpenRouterLLMClient:
+    """Async client for OpenRouter chat completion APIs."""
 
     def __init__(
         self,
         *,
         api_key: str,
-        api_base: str = "https://api.x.ai/v1",
-        model: str = "grok-3-mini",
+        api_base: str = "https://openrouter.ai/api/v1",
+        model: str = "anthropic/claude-3.5-sonnet",
         timeout_seconds: float = 30.0,
     ) -> None:
         self._api_key = api_key
@@ -37,6 +37,8 @@ class GrokLLMClient:
         url = f"{self._api_base}/chat/completions"
         headers = {
             "Authorization": f"Bearer {self._api_key}",
+            "HTTP-Referer": "https://carb-assistant.local",
+            "X-OpenRouter-Title": "Universal CRM + OpenClaw",
             "Content-Type": "application/json",
         }
         payload: dict[str, Any] = {
