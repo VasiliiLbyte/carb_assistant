@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.tasks import TaskOut
+
 
 class AISuggestTaskRequest(BaseModel):
     text: str = Field(min_length=1, max_length=8000)
@@ -23,3 +25,12 @@ class AIAssigneeRequest(BaseModel):
 
 class AIResponse(BaseModel):
     result: dict
+
+
+class AICreateTasksFromMessageRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=8000)
+    project_id: int | str | None = None
+
+
+class AICreateTasksFromMessageResponse(BaseModel):
+    tasks: list[TaskOut]

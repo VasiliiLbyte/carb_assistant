@@ -20,6 +20,13 @@ Monorepo with FastAPI backend and React frontend.
 - **Миграции**: отдельная миграция для Этапа 2 не требовалась (изменений схемы БД нет)
 - **Smoke-тест API**: добавлен `backend/scripts/smoke_api_crud.py` для быстрой проверки CRUD-цикла через HTTP API
 
+## Что сделано на Этапе 3
+- **AI-автосоздание задач**: добавлен сервис `backend/app/ai/task_auto_creator.py` с классом `TaskAutoCreator` и методом `create_tasks_from_message(...)`.
+- **Новый AI-роутер в стиле Stage 2**: добавлен `backend/app/routers/ai.py` и endpoint `POST /api/v1/ai/create-tasks-from-message`.
+- **DI для LLM**: добавлены зависимости `get_db` и `get_llm_client` в `backend/app/dependencies.py` (без hardcoded ключей и внешних секретов).
+- **Сохранение задач через CRUD**: созданные из сообщения задачи сохраняются через `backend/app/crud/tasks.py`.
+- **Smoke-тест AI endpoint**: добавлен `backend/scripts/smoke_ai.py`.
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`
@@ -41,6 +48,20 @@ Monorepo with FastAPI backend and React frontend.
 1. Получите JWT и установите переменную `SMOKE_BEARER_TOKEN`
 2. При необходимости задайте `SMOKE_API_BASE_URL` (по умолчанию: `http://localhost:8010/api/v1`)
 3. Запустите smoke-тест: `python backend/scripts/smoke_api_crud.py`
+
+## Stage 3 AI endpoint smoke workflow
+1. Получите JWT и установите переменную `SMOKE_BEARER_TOKEN`.
+2. При необходимости задайте `SMOKE_API_BASE_URL` (по умолчанию: `http://localhost:8010/api/v1`).
+3. Запустите AI smoke-тест: `python backend/scripts/smoke_ai.py`.
+4. Ручная проверка endpoint:
+   - `POST http://localhost:8010/api/v1/ai/create-tasks-from-message`
+   - Body:
+     ```json
+     {
+       "message": "- Подготовить отчёт до 15.04.2026; - Согласовать бюджет, ответственный: ivan",
+       "project_id": null
+     }
+     ```
 
 ## Docker troubleshooting
 - Compose validates (`docker compose config -q`). If Postgres stays `Created`, check `docker logs crab_assistant-postgres-1` — often **port 5432 already in use** on the host. This project maps Postgres to **host `5433`** (`5433:5432`); from your machine use `DB_HOST=localhost DB_PORT=5433` for tools like `smoke_schema.py` and GUI clients. Services inside Compose still use hostname `postgres` and port `5432`.
