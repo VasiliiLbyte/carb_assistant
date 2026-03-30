@@ -34,6 +34,15 @@ Monorepo with FastAPI backend and React frontend.
 - **Интеграция webhook -> задачи**: входящее сообщение парсится через `TaskAutoCreator` и сохраняется через CRUD.
 - **Smoke-тесты Stage 4**: обновлен `backend/scripts/smoke_ai.py` и добавлен `backend/scripts/smoke_openclaw.py`.
 
+## Что сделано на Этапе 5
+- **Document Processor**: добавлен пакет `backend/app/document_processor/` с `DocumentProcessor` и pydantic-схемами.
+- **Загрузка и обработка документов**: добавлен роутер `backend/app/routers/documents.py` с endpoint'ами:
+  - `POST /api/v1/documents/upload`
+  - `POST /api/v1/documents/process`
+- **Базовый RAG-пайплайн**: извлечение текста из TXT/PDF/DOCX, вызов OpenRouter LLM, извлечение задач/рисков.
+- **Интеграция с CRUD задач**: извлечённые задачи сохраняются через `backend/app/crud/tasks.py`.
+- **Smoke-тест Stage 5**: добавлен `backend/scripts/smoke_document.py`.
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`
@@ -91,6 +100,16 @@ Monorepo with FastAPI backend and React frontend.
        "project_id": null
      }
      ```
+
+## Stage 5 Document Processor smoke
+1. Убедитесь, что backend поднят: `docker compose up --build -d backend`.
+2. Установите `SMOKE_BEARER_TOKEN` (JWT с ролью `admin`/`pm`/`engineer`).
+3. Запустите тест:
+   - из хоста: `python backend/scripts/smoke_document.py`
+   - из контейнера: `docker compose exec -e SMOKE_API_BASE_URL=http://127.0.0.1:8000/api/v1 backend python -m scripts.smoke_document`
+4. Ручная проверка:
+   - `POST /api/v1/documents/upload` (multipart, поле `file`)
+   - `POST /api/v1/documents/process` с body `{"file_key":"<from upload>", "project_id": null}`
 
 ## Docker troubleshooting
 - Compose validates (`docker compose config -q`). If Postgres stays `Created`, check `docker logs crab_assistant-postgres-1` — often **port 5432 already in use** on the host. This project maps Postgres to **host `5433`** (`5433:5432`); from your machine use `DB_HOST=localhost DB_PORT=5433` for tools like `smoke_schema.py` and GUI clients. Services inside Compose still use hostname `postgres` and port `5432`.

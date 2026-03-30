@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+python-multipart
 sqlalchemy
 asyncpg
 psycopg2-binary
@@ -13,5 +14,7 @@ celery[redis]
 redis
 httpx
 boto3
+pdfplumber
+python-docx
 pytest
 pytest-asyncio
