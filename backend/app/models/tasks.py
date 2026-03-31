@@ -29,3 +29,4 @@ class Task(Base, UUIDMixin, TimestampMixin):
     project = relationship('Project', back_populates='tasks', lazy='selectin')
     assignee = relationship('User', back_populates='assigned_tasks', lazy='selectin')
     recommendations = relationship('AIRecommendation', back_populates='task', lazy='selectin')
+    risks = relationship('Risk', back_populates='task', lazy='selectin')

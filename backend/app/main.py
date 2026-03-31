@@ -17,6 +17,7 @@ from app.routers.openclaw import router as openclaw_router
 from app.routers.proactive import router as proactive_router
 from app.routers.projects import router as projects_router
 from app.routers.recommender import router as recommender_router
+from app.routers.risks import router as risks_router
 from app.routers.tasks import router as tasks_router
 from app.integrations.storage.minio_client import ensure_bucket_exists
 
@@ -50,6 +51,7 @@ app.include_router(openclaw_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
 app.include_router(proactive_router, prefix="/api/v1")
 app.include_router(recommender_router, prefix="/api/v1")
+app.include_router(risks_router, prefix="/api/v1")
 
 
 @app.exception_handler(ValueError)

@@ -64,6 +64,22 @@ Monorepo with FastAPI backend and React frontend.
   - `backend/app/crud/users.py` для обновления `competency` и `load`
 - **Smoke-тест Stage 7**: добавлен `backend/scripts/smoke_recommender.py`.
 
+## Что сделано на Этапе 8
+- **Risk Analyzer**: добавлен пакет `backend/app/risk_analyzer/` с `RiskAnalyzer` и схемами `RiskCreate`, `RiskOut`, `RiskDetectionRequest`.
+- **LLM-детекция рисков из разных источников**:
+  - `detect_risks_from_task(task_id)`
+  - `detect_risks_from_document(document_key)`
+  - `detect_risks_from_message(message, project_id)`
+- **Новый API-роутер**: добавлен `backend/app/routers/risks.py`:
+  - `GET /api/v1/risks` (фильтр по `project_id`/`task_id`)
+  - `POST /api/v1/risks/detect-from-task`
+  - `POST /api/v1/risks/detect-from-document`
+  - `POST /api/v1/risks/detect-from-message`
+- **Приоритизация рисков**: автоматическая классификация severity (`high`/`medium`/`low`) по матрице вероятность x влияние.
+- **Интеграция с Proactive**: для `high`-рисков выполняется автоэскалация (`status=escalated`) при наличии включенных proactive-правил с trigger `high_risk_detected`/`high_risk_escalation`.
+- **Миграция Stage 8**: `backend/migrations/versions/0004_risk_task_source_severity.py` (добавлены `risks.severity`, `risks.source`, `risks.task_id` + индексы/FK).
+- **Smoke-тест Stage 8**: добавлен `backend/scripts/smoke_risk.py`.
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`
@@ -194,6 +210,35 @@ Monorepo with FastAPI backend and React frontend.
    {
      "task_id": "<uuid задачи>",
      "assignee_id": "<uuid исполнителя>"
+   }
+   ```
+
+## Stage 8 Risk Analyzer examples and smoke
+1. Убедитесь, что backend поднят: `docker compose up --build -d backend`.
+2. Установите `SMOKE_BEARER_TOKEN` (JWT с ролью `admin`/`pm`/`engineer`).
+3. Примените миграции: `cd backend && alembic upgrade head`.
+4. Запустите smoke:
+   - из хоста: `python backend/scripts/smoke_risk.py`
+   - из контейнера: `docker compose exec -e SMOKE_API_BASE_URL=http://127.0.0.1:8000/api/v1 backend python -m scripts.smoke_risk`
+5. Примеры ручной проверки:
+   - `POST /api/v1/risks/detect-from-task`
+   ```json
+   {
+     "task_id": "<uuid задачи>"
+   }
+   ```
+   - `POST /api/v1/risks/detect-from-document`
+   ```json
+   {
+     "document_key": "projects/<project_uuid>/documents/<file>.txt",
+     "project_id": null
+   }
+   ```
+   - `POST /api/v1/risks/detect-from-message`
+   ```json
+   {
+     "message": "Есть риск срыва срока из-за задержки поставщика API",
+     "project_id": null
    }
    ```
 
