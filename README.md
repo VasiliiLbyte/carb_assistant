@@ -80,6 +80,25 @@ Monorepo with FastAPI backend and React frontend.
 - **Миграция Stage 8**: `backend/migrations/versions/0004_risk_task_source_severity.py` (добавлены `risks.severity`, `risks.source`, `risks.task_id` + индексы/FK).
 - **Smoke-тест Stage 8**: добавлен `backend/scripts/smoke_risk.py`.
 
+## Что сделано на Этапе 9
+- **Frontend Dashboard (React 18 + TypeScript + Vite + TailwindCSS)**: обновлена структура `frontend/src` на модульную (`api/`, `hooks/`, `components/`, `pages/`), добавлены переиспользуемые UI-блоки (`ProjectCard`, `TaskList`, `RiskCard`, `RecommendationCard`, `Sidebar`).
+- **Главный дашборд**: реализованы секции проектов, задач, рисков и рекомендаций исполнителей; добавлены action-кнопки `Загрузить документ`, `Создать задачу`, `Триггер proactive`.
+- **React Query интеграция**: включены hooks `useProjects`, `useTasks`, `useRisks`, `useRecommender` с кэшированием, `staleTime` и автообновлением через `refetchInterval`.
+- **API client + JWT-заглушка**: `frontend/src/api/client.ts` использует `axios` с `baseURL` и `Authorization: Bearer <token>` из `localStorage` (`carb_jwt`); добавлена страница `Settings` для сохранения токена.
+- **Smoke-тест Stage 9**: добавлен базовый тест `frontend/src/App.smoke.test.tsx` (проверяет, что ключевая навигация рендерится).
+
+## Frontend запуск (Stage 9)
+1. Перейдите в каталог фронтенда: `cd frontend`
+2. Установите зависимости: `npm install`
+3. Запустите dev-сервер: `npm run dev`
+4. Откройте дашборд: `http://localhost:5173`
+
+Опционально можно задать API base URL через `VITE_API_BASE_URL` (по умолчанию используется `/api/v1` и проксирование через Vite на `http://localhost:8010`).
+
+## Frontend smoke-проверка
+- Запуск тестов: `cd frontend && npm run test`
+- Ручная проверка: открыть `http://localhost:5173`, убедиться что видны sidebar и страницы `Dashboard`, `Projects`, `Tasks`, `Documents`, `Risks`, `Settings`.
+
 ## Quick start
 1. Copy `.env.example` to `.env`
 2. Run `docker-compose up --build`

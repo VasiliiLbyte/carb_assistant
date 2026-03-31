@@ -1,36 +1,61 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { RequireAuth } from './auth/RequireAuth'
+import { Sidebar } from './components/Sidebar'
+import { ToastProvider } from './components/ToastProvider'
 import { DashboardPage } from './pages/DashboardPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { TasksPage } from './pages/TasksPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 import { RisksPage } from './pages/RisksPage'
-import { UsersPage } from './pages/UsersPage'
-import { AIRecommendationsPage } from './pages/AIRecommendationsPage'
-import { ProactiveRulesPage } from './pages/ProactiveRulesPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { LoginPage } from './pages/LoginPage'
+
+function AppShell() {
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="mx-auto flex max-w-7xl gap-4 p-4">
+        <Sidebar />
+        <div className="flex-1">
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/risks" element={<RisksPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function App() {
+  const location = useLocation()
+
+  // Hard override for login route to avoid any nested-route mismatch.
+  if (location.pathname === '/login') {
+    return (
+      <ToastProvider>
+        <LoginPage />
+      </ToastProvider>
+    )
+  }
+
   return (
-    <div style={{ padding: 16 }}>
-      <nav style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-        <Link to="/">Dashboard</Link>
-        <Link to="/projects">Projects</Link>
-        <Link to="/tasks">Tasks</Link>
-        <Link to="/documents">Documents</Link>
-        <Link to="/risks">Risks</Link>
-        <Link to="/users">Users</Link>
-        <Link to="/ai">AI Log</Link>
-        <Link to="/proactive">Proactive</Link>
-      </nav>
+    <ToastProvider>
       <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/tasks" element={<TasksPage />} />
-        <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/risks" element={<RisksPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/ai" element={<AIRecommendationsPage />} />
-        <Route path="/proactive" element={<ProactiveRulesPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/*"
+          element={
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          }
+        />
       </Routes>
-    </div>
+    </ToastProvider>
   )
 }
