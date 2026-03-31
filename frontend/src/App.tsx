@@ -13,7 +13,7 @@ import { LoginPage } from './pages/LoginPage'
 function AppShell() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto flex max-w-7xl gap-4 p-4">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:flex-row">
         <Sidebar />
         <div className="flex-1">
           <Routes>

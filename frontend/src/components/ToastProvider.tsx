@@ -1,12 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
+import { Toaster, toast } from 'react-hot-toast'
 
 type ToastType = 'success' | 'error' | 'info'
-
-interface ToastItem {
-  id: number
-  message: string
-  type: ToastType
-}
 
 interface ToastContextValue {
   showToast: (message: string, type?: ToastType) => void
@@ -15,23 +10,16 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItem[]>([])
-  const timeoutIdsRef = useRef<number[]>([])
-
   const showToast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = Date.now() + Math.floor(Math.random() * 1000)
-    setToasts((prev) => [...prev, { id, message, type }])
-    const timeoutId = window.setTimeout(() => {
-      setToasts((prev) => prev.filter((item) => item.id !== id))
-    }, 3000)
-    timeoutIdsRef.current.push(timeoutId)
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      timeoutIdsRef.current.forEach((id) => window.clearTimeout(id))
-      timeoutIdsRef.current = []
+    if (type === 'success') {
+      toast.success(message)
+      return
     }
+    if (type === 'error') {
+      toast.error(message)
+      return
+    }
+    toast(message)
   }, [])
 
   const value = useMemo(() => ({ showToast }), [showToast])
@@ -39,22 +27,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed right-4 top-4 z-50 flex w-80 flex-col gap-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`rounded-lg px-3 py-2 text-sm text-white shadow-lg ${
-              toast.type === 'success'
-                ? 'bg-emerald-600'
-                : toast.type === 'error'
-                  ? 'bg-rose-600'
-                  : 'bg-slate-700'
-            }`}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
     </ToastContext.Provider>
   )
 }

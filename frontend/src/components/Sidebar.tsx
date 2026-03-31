@@ -11,9 +11,9 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-full max-w-64 border-r border-slate-200 bg-white p-4">
+    <aside className="w-full border border-slate-200 bg-white p-4 lg:max-w-64 lg:border-r lg:border-t-0">
       <h1 className="mb-5 text-xl font-semibold text-slate-900">Carb Assistant</h1>
-      <nav className="flex flex-col gap-2">
+      <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-col">
         {navItems.map((item) => (
           <NavLink
             key={item.to}

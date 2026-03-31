@@ -1,26 +1,42 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { uploadDocument } from '../api/endpoints'
+import { Modal } from '../components/ui/Modal'
+import { useUploadDocument } from '../hooks/useUploadDocument'
 
 export function DocumentsPage() {
   const [message, setMessage] = useState('')
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => uploadDocument(file),
-    onSuccess: (data) => setMessage(`Uploaded: ${data.filename}`),
-  })
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const uploadMutation = useUploadDocument()
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <h2 className="text-lg font-semibold text-slate-900">Upload document</h2>
-      <input
-        type="file"
-        className="mt-3 block text-sm"
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) uploadMutation.mutate(file)
-        }}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-slate-900">Documents</h2>
+        <button
+          type="button"
+          className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Загрузить документ
+        </button>
+      </div>
       {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Загрузка документа">
+        <input
+          type="file"
+          className="block w-full rounded-lg border border-slate-300 p-2 text-sm"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (!file) return
+            uploadMutation.mutate(file, {
+              onSuccess: (data) => {
+                setMessage(`Uploaded: ${data.filename}`)
+                setIsModalOpen(false)
+              },
+            })
+          }}
+        />
+      </Modal>
     </div>
   )
 }

@@ -263,3 +263,34 @@ Monorepo with FastAPI backend and React frontend.
 
 ## Docker troubleshooting
 - Compose validates (`docker compose config -q`). If Postgres stays `Created`, check `docker logs crab_assistant-postgres-1` — often **port 5432 already in use** on the host. This project maps Postgres to **host `5433`** (`5433:5432`); from your machine use `DB_HOST=localhost DB_PORT=5433` for tools like `smoke_schema.py` and GUI clients. Services inside Compose still use hostname `postgres` and port `5432`.
+
+## Что сделано на Этапе 9.5
+- Полировка React PWA дашборда: улучшены карточки, добавлены кликабельные детали и быстрые действия на главной странице.
+- Добавлены модальные окна для создания/редактирования проектов и задач, а также модальное окно загрузки документов.
+- Интегрированы `react-hot-toast` уведомления для успешных и ошибочных операций.
+- Реализован frontend CRUD-слой для проектов и задач через React Query mutations и инвалидацию кэша.
+- Добавлены вызовы AI/Risk сценариев из UI: `/recommender/recommend`, `/risks/detect-from-task`, `/risks/detect-from-message`.
+- Улучшен responsive layout (адаптивная боковая навигация и shell-компоновка).
+- Добавлены базовые PWA-артефакты (`manifest.webmanifest`, `sw.js`) и регистрация service worker.
+- Обновлен smoke-тест фронтенда: `frontend/src/App.smoke.test.tsx` (рендер дашборда и проверка ключевых кнопок).
+
+### Скриншоты (описание)
+- `Dashboard`: быстрые действия (`Создать задачу`, `Загрузить документ`, `Триггер proactive ping`, `Получить рекомендацию`) + карточки с деталями по клику.
+- `Projects`: сетка проектов с кнопками `Редактировать/Удалить` и модалкой создания/редактирования.
+- `Tasks`: список задач с цветами приоритетов/статусов, CRUD-кнопками и детальной модалкой.
+- `Risks`: карточки рисков с severity-цветами и ручными триггерами risk detection.
+
+## Финальная инструкция по запуску всего проекта
+1. Backend + инфраструктура:
+   - `docker compose up --build -d`
+2. Применить миграции:
+   - `docker compose exec backend alembic upgrade head`
+3. Запустить frontend:
+   - `cd frontend`
+   - `npm install`
+   - `npm run dev`
+4. Проверить:
+   - API health: `http://localhost:8010/health`
+   - Frontend: `http://localhost:5173`
+5. Smoke-тест фронтенда:
+   - `cd frontend && npm test`

@@ -7,10 +7,7 @@ export function useUploadDocument() {
   const { showToast } = useToast()
 
   return useMutation({
-    mutationFn: async () => {
-      const file = new File(['Dashboard upload test'], 'dashboard-smoke.txt', { type: 'text/plain' })
-      return uploadDocument(file)
-    },
+    mutationFn: (file: File) => uploadDocument(file),
     onSuccess: (data) => {
       showToast(`Uploaded: ${data.filename}`, 'success')
     },

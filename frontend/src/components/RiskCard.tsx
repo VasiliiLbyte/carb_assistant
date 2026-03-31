@@ -2,6 +2,7 @@ import type { Risk } from '../types'
 
 interface RiskCardProps {
   risk: Risk
+  onClick?: (risk: Risk) => void
 }
 
 const severityClass: Record<Risk['severity'], string> = {
@@ -10,9 +11,14 @@ const severityClass: Record<Risk['severity'], string> = {
   low: 'border-emerald-300 bg-emerald-50',
 }
 
-export function RiskCard({ risk }: RiskCardProps) {
+export function RiskCard({ risk, onClick }: RiskCardProps) {
   return (
-    <article className={`rounded-xl border p-4 shadow-sm ${severityClass[risk.severity]}`}>
+    <article
+      className={`rounded-xl border p-4 shadow-sm transition ${severityClass[risk.severity]} ${
+        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      }`}
+      onClick={() => onClick?.(risk)}
+    >
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-900">{risk.title}</h3>
         <span className="text-xs font-semibold uppercase text-slate-700">{risk.severity}</span>

@@ -74,3 +74,29 @@ export interface ProactiveRule {
   created_at: string
   updated_at: string
 }
+
+export interface RiskDetectionResult {
+  created_count: number
+  escalated_count: number
+  risks: Risk[]
+}
+
+export interface ProjectPayload {
+  name: string
+  project_type: string
+  stage: string
+  custom_fields?: Record<string, unknown>
+}
+
+export interface TaskPayload {
+  title: string
+  description?: string
+  status?: Task['status']
+  priority?: Task['priority']
+  estimated_hours?: number
+  due_at?: string | null
+  dependency_ids?: string[]
+  tags?: string[]
+  project_id?: UUID | null
+  assignee_id?: UUID | null
+}
